@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You'll Be in My Heart</title>
+    
+    <style>
+        :root {
+            --color-bg: #2B2D31; --color-text: #DBDEE1; --color-text-dim: #6e7278;
+            --color-accent: #5865F2; --color-accent-hover: #4752C4; --color-white: #FFFFFF;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--color-bg); color: var(--color-text); margin: 0;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; text-align: center; overflow: hidden;
+        }
+        .container { width: 90%; max-width: 700px; position: relative; }
+        h1 {
+            color: var(--color-white); font-weight: bold; font-size: 28px;
+            margin-top: 0; margin-bottom: 30px;
+        }
+        #lyric-container {
+            height: 300px; overflow: hidden; position: relative;
+            border-top: 1px solid #444; border-bottom: 1px solid #444; padding: 20px 0;
+            -webkit-mask-image: linear-gradient(transparent, black 20%, black 80%, transparent);
+            mask-image: linear-gradient(transparent, black 20%, black 80%, transparent);
+        }
+        #lyric-lines { transition: transform 0.5s ease-out; }
+        #lyric-lines p {
+            font-size: 24px; font-weight: 500; line-height: 1.6; margin: 15px 0;
+            padding: 5px; color: var(--color-text-dim); opacity: 0.5;
+            transition: all 0.5s ease-out;
+        }
+        #lyric-lines p.current-line {
+            color: var(--color-white); font-weight: bold; opacity: 1;
+            transform: scale(1.1); text-shadow: 0 0 10px var(--color-white);
+        }
+        #start-button {
+            background-color: var(--color-accent); color: var(--color-white); border: none;
+            padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 5px;
+            cursor: pointer; margin-top: 25px; transition: all 0.5s ease;
+        }
+        #start-button:disabled { background-color: #444; opacity: 0.5; }
+        #start-button:hover:not(:disabled) { background-color: var(--color-accent-hover); }
+        .hidden { opacity: 0; transform: scale(0.8); pointer-events: none; }
+        footer {
+            margin-top: 30px; font-size: 12px; color: var(--color-text-dim);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>You'll Be in My Heart</h1>
+        <div id="lyric-container">
+            <div id="lyric-lines">
+                </div>
+        </div>
+        <button id="start-button">Mulai</button>
+        <footer>© Vincentius Aleria</footer>
+    </div>
+
+    <audio id="song" src="https://files.catbox.moe/4xqvpu.mp3" preload="auto"></audio>
+    
+
+    <script>
+        // --- TIMING LIRIK (Versi NIKI - Bahasa Inggris) ---
+        const lyricsWithTimings = [
+            { time: 0.71, text: "Come stop the cryin', it'll be alright" },
+            { time: 5.46, text: "Just take my hand, hold it tight" },
+            { time: 10.56, text: "I will protect you from all around you" },
+            { time: 15.75, text: "I will be here, don't you cry" },
+            { time: 20.00, text: "" }, // Jeda
+            { time: 20.41, text: "For one so small, you seem so strong" },
+            { time: 25.97, text: "My arms will hold you, keep you safe and warm" },
+            { time: 31.02, text: "This bond between us can't be broken" },
+            { time: 36.09, text: "I will be here, don't you cry" },
+            { time: 40.00, text: "" }, // Jeda
+            { time: 40.83, text: "'Cause you'll be in my heart" },
+            { time: 45.72, text: "Yes, you'll be in my heart" },
+            { time: 50.77, text: "From this day on," },
+            { time: 53.00, text: "now and forever more" },
+            { time: 57.50, text: "" }, // Jeda
+            { time: 60.09, text: "Yes, You'll be in my heart" },
+            { time: 66.10, text: "No matter what they say" },
+            { time: 71.11, text: "You'll be here in my heart" },
+            { time: 75.00, text: "always" },
+            { time: 80.00, text: "" }, // Jeda
+            { time: 81.62, text: "Why can't they understand the way we feel" },
+            { time: 86.92, text: "They just don't trust what they can't explain" },
+            { time: 92.20, text: "I know we're different, but deep inside us" },
+            { time: 97.29, text: "We're not that different at all" },
+            { time: 100.00, text: "(We're not that different at all)" },
+            { time: 101.00, text: "" }, // Jeda
+            { time: 101.96, text: "And you'll be in my heart" },
+            { time: 107.36, text: "Yes, you'll be in my heart" },
+            { time: 109.50, text: "From this day on," },
+            { time: 111.94, text: "now and forever more" },
+            { time: 116.00, text: "" }, // Jeda
+            { time: 122.41, text: "Don't listen to them, 'cause what do they know" },
+            { time: 128.17, text: "We need each other, to have, to hold" },
+            { time: 132.61, text: "They'll see in time" },
+            { time: 135.00, text: "I know" },
+            { time: 137.00, text: "" }, // Jeda
+            { time: 142.42, text: "When destiny calls you, you must be strong" },
+            { time: 148.04, text: "I may not be with you, but you got to hold on" },
+            { time: 152.95, text: "They'll see in time" },
+            { time: 155.50, text: "I know" },
+            { time: 161.72, text: "We'll show them together" },
+            { time: 163.00, text: "" }, // Jeda
+            { time: 163.05, text: "'Cause you'll be in my heart" },
+            { time: 168.08, text: "Yes, you'll be in my heart" },
+            { time: 170.50, text: "From this day on," },
+            { time: 173.33, text: "now and forever more" },
+            { time: 180.00, text: "" }, // Jeda
+            { time: 183.26, text: "You'll be in my heart" },
+            { time: 188.55, text: "No matter what they say" },
+            { time: 193.69, text: "You'll be here in my heart" },
+            { time: 197.00, text: "Always" },
+            { time: 201.00, text: "" }, // Jeda
+            { time: 203.62, text: "Always" },
+            { time: 206.00, text: "" }, // Jeda
+            { time: 208.36, text: "Just look over your shoulder" },
+            { time: 213.47, text: "Just look over your shoulder" },
+            { time: 218.35, text: "Just look over your shoulder" },
+            { time: 223.87, text: "I'll be there" },
+            { time: 227.31, text: "Always" }
+        ];
+
+        // --- Logika Animasi (Sama persis, tidak perlu diubah) ---
+        const startButton = document.getElementById('start-button');
+        const audio = document.getElementById('song');
+        const lyricLinesContainer = document.getElementById('lyric-lines');
+        const lyricContainer = document.getElementById('lyric-container');
+        let lyricElements = [];
+        let currentLineIndex = -1;
+
+        lyricsWithTimings.forEach((line, index) => {
+            const p = document.createElement('p'); p.textContent = line.text || '\u00A0';
+            p.dataset.index = index; lyricLinesContainer.appendChild(p); lyricElements.push(p);
+        });
+        startButton.addEventListener('click', () => {
+            if (audio.error) { alert("Error: Gagal memuat file audio.\nCek koneksi internet atau link audio di kode."); return; }
+            if (audio.ended) { audio.currentTime = 0; }
+            audio.play(); startButton.classList.add('hidden'); startButton.disabled = true;
+        });
+        audio.addEventListener('ended', () => {
+            startButton.textContent = "Putar Lagi"; startButton.classList.remove('hidden'); startButton.disabled = false;
+            if (currentLineIndex !== -1 && lyricElements[currentLineIndex]) { lyricElements[currentLineIndex].classList.remove('current-line'); }
+            currentLineIndex = -1; lyricLinesContainer.style.transform = `translateY(0px)`;
+        });
+        audio.addEventListener('timeupdate', () => {
+            const currentTime = audio.currentTime; let newCurrentLineIndex = -1;
+            for (let i = 0; i < lyricsWithTimings.length; i++) { if (currentTime >= lyricsWithTimings[i].time) { newCurrentLineIndex = i; } else { break; } }
+            if (newCurrentLineIndex !== currentLineIndex) {
+                if (currentLineIndex !== -1 && lyricElements[currentLineIndex]) { lyricElements[currentLineIndex].classList.remove('current-line'); }
+                if (newCurrentLineIndex !== -1 && lyricElements[newCurrentLineIndex]) {
+                    lyricElements[newCurrentLineIndex].classList.add('current-line');
+                    const lineElement = lyricElements[newCurrentLineIndex];
+                    const containerHeight = lyricContainer.offsetHeight;
+                    const scrollOffset = (containerHeight / 2) - (lineElement.offsetHeight / 2) - lineElement.offsetTop;
+                    lyricLinesContainer.style.transform = `translateY(${scrollOffset}px)`;
+                }
+                currentLineIndex = newCurrentLineIndex;
+            }
+        });
+        audio.addEventListener('error', (e) => {
+            console.error("Error loading audio file:", e);
+            const display = document.getElementById('lyric-container');
+            display.innerHTML = `<p style="color: #F23F42; font-style: normal;">Error: Gagal memuat file audio.<br>Cek koneksi internet atau pastikan link audio di kode benar.</p>`;
+            startButton.disabled = true;
+        });
+    </script>
+
+</body>
+</html>
